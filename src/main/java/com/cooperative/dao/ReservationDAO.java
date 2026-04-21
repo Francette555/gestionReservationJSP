@@ -161,17 +161,27 @@ public class ReservationDAO {
         return reservations;
     }
 
-    // Obtenir la recette totale
+    // Recette totale = somme des frais de toutes les réservations
     public int getRecetteTotale() throws SQLException {
-        String sql = "SELECT COALESCE(SUM(montant_avance), 0) as total FROM RESERVER";
+        String sql = "SELECT COALESCE(SUM(v.frais), 0) as total FROM RESERVER r " +
+                "JOIN VOITURE v ON r.idvoit = v.idvoit";
+
+        System.out.println("=== ReservationDAO.getRecetteTotale() ===");
 
         try (Connection conn = DatabaseConnection.getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
 
             if (rs.next()) {
-                return rs.getInt("total");
+                int total = rs.getInt("total");
+                System.out.println("Recette totale: " + total);
+                return total;
             }
+
+        } catch (SQLException e) {
+            System.err.println("ERREUR SQL dans getRecetteTotale(): " + e.getMessage());
+            e.printStackTrace();
+            throw e;
         }
         return 0;
     }

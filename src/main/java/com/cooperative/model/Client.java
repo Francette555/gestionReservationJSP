@@ -1,5 +1,3 @@
-
-// Client.java
 package com.cooperative.model;
 
 public class Client {
@@ -15,7 +13,6 @@ public class Client {
         this.numtel = numtel;
     }
 
-    // Getters et Setters
     public int getIdclt() { return idclt; }
     public void setIdclt(int idclt) { this.idclt = idclt; }
     public String getNom() { return nom; }
@@ -23,5 +20,8 @@ public class Client {
     public String getNumtel() { return numtel; }
     public void setNumtel(String numtel) { this.numtel = numtel; }
 
-
+    @Override
+    public String toString() {
+        return "Client{idclt=" + idclt + ", nom='" + nom + "', numtel='" + numtel + "'}";
+    }
 }

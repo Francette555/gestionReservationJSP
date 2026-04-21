@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestion des Clients - Application CRM</title>
+    <title>Gestion des Clients - Coopérative</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -150,14 +150,21 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Auto-hide messages after 3 seconds */
         .alert-success, .alert-error {
             cursor: pointer;
             transition: opacity 0.5s;
         }
+
+        .debug-info {
+            background: #f0f0f0;
+            border-left: 4px solid #667eea;
+            padding: 10px;
+            margin-bottom: 15px;
+            font-size: 12px;
+            color: #666;
+        }
     </style>
     <script>
-        // Auto-hide messages after 3 seconds
         setTimeout(function() {
             var successMsg = document.querySelector('.alert-success');
             var errorMsg = document.querySelector('.alert-error');
@@ -181,7 +188,6 @@
             }
         }, 100);
 
-        // Fonction pour effacer les messages au clic
         function clearMessage(element) {
             element.style.opacity = '0';
             setTimeout(function() {
@@ -224,6 +230,11 @@
         </div>
     </c:if>
 
+    <!-- Info debug : affiche le nombre de clients chargés -->
+    <div class="debug-info">
+        📊 <strong>Info technique :</strong> ${clients.size()} client(s) chargé(s) depuis la base de données
+    </div>
+
     <div class="grid">
         <!-- SECTION 1: AJOUTER UN CLIENT -->
         <div class="card">
@@ -231,7 +242,7 @@
                 <span class="icon">➕</span>
                 <h2>Ajouter un Client</h2>
             </div>
-            <form action="${pageContext.request.contextPath}/client" method="post">
+            <form action="${pageContext.request.contextPath}/ClientServlet" method="post">
                 <input type="hidden" name="action" value="insert">
                 <div class="form-group">
                     <label>👤 Nom complet *</label>
@@ -239,8 +250,8 @@
                 </div>
                 <div class="form-group">
                     <label>📞 Numéro de téléphone *</label>
-                    <input type="tel" name="numtel" placeholder="Ex: 0343388812" required pattern="(03|05|06|07)[0-9]{8}">
-                    <small>Format: 03XXXXXXXX, 05XXXXXXXX, 06XXXXXXXX, 07XXXXXXXX</small>
+                    <input type="tel" name="numtel" placeholder="Ex: 0343388812" required>
+                    <small>Format: 0343388812, 0321456789, etc.</small>
                 </div>
                 <button type="submit" class="btn btn-primary">💾 Enregistrer</button>
                 <button type="reset" class="btn btn-secondary">🗑️ Réinitialiser</button>
@@ -253,26 +264,27 @@
                 <span class="icon">✏️</span>
                 <h2>Modifier un Client</h2>
             </div>
-            <div class="alert-info">
-                ℹ️ Cliquez sur le bouton "Modifier" dans la liste pour modifier un client
-            </div>
 
-            <!-- Formulaire de modification (affiché quand un client est sélectionné) -->
-            <c:if test="${not empty client}">
-                <form action="${pageContext.request.contextPath}/client" method="post" style="margin-top: 20px;">
+            <c:if test="${not empty clientToEdit}">
+                <form action="${pageContext.request.contextPath}/ClientServlet" method="post" style="margin-top: 10px;">
                     <input type="hidden" name="action" value="update">
-                    <input type="hidden" name="idclt" value="${client.idclt}">
+                    <input type="hidden" name="idclt" value="${clientToEdit.idclt}">
                     <div class="form-group">
                         <label>👤 Nom complet *</label>
-                        <input type="text" name="nom" value="${client.nom}" required>
+                        <input type="text" name="nom" value="${clientToEdit.nom}" required>
                     </div>
                     <div class="form-group">
                         <label>📞 Numéro de téléphone *</label>
-                        <input type="tel" name="numtel" value="${client.numtel}" required pattern="(03|05|06|07)[0-9]{8}">
+                        <input type="tel" name="numtel" value="${clientToEdit.numtel}" required>
                     </div>
                     <button type="submit" class="btn btn-primary">💾 Mettre à jour</button>
-                    <a href="${pageContext.request.contextPath}/client" class="btn btn-secondary">Annuler</a>
+                    <a href="${pageContext.request.contextPath}/ClientServlet" class="btn btn-secondary">Annuler</a>
                 </form>
+            </c:if>
+            <c:if test="${empty clientToEdit}">
+                <div class="alert-info">
+                    ℹ️ Cliquez sur le bouton "Modifier" dans la liste ci-dessous pour modifier un client
+                </div>
             </c:if>
         </div>
     </div>
@@ -285,7 +297,7 @@
         </div>
 
         <div style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
-            <a href="${pageContext.request.contextPath}/client" class="btn btn-primary">🔄 Rafraîchir</a>
+            <a href="${pageContext.request.contextPath}/ClientServlet" class="btn btn-primary">🔄 Rafraîchir</a>
             <a href="../index.jsp" class="btn btn-secondary">🏠 Retour à l'accueil</a>
         </div>
 
@@ -308,8 +320,8 @@
                                 <td><strong>${clientItem.nom}</strong></td>
                                 <td>${clientItem.numtel}</td>
                                 <td class="actions">
-                                    <a href="${pageContext.request.contextPath}/client?action=edit&id=${clientItem.idclt}" class="btn btn-warning btn-sm">✏️ Modifier</a>
-                                    <a href="${pageContext.request.contextPath}/client?action=delete&id=${clientItem.idclt}"
+                                    <a href="${pageContext.request.contextPath}/ClientServlet?action=edit&id=${clientItem.idclt}" class="btn btn-warning btn-sm">✏️ Modifier</a>
+                                    <a href="${pageContext.request.contextPath}/ClientServlet?action=delete&id=${clientItem.idclt}"
                                        class="btn btn-danger btn-sm"
                                        onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce client ?')">🗑️ Supprimer</a>
                                 </td>
@@ -336,7 +348,7 @@
             <h2>Recherche de Client</h2>
         </div>
 
-        <form action="${pageContext.request.contextPath}/client" method="get" style="margin-bottom: 25px;">
+        <form action="${pageContext.request.contextPath}/ClientServlet" method="get" style="margin-bottom: 25px;">
             <input type="hidden" name="action" value="search">
             <div class="form-group">
                 <label>🔎 Rechercher par nom ou numéro de téléphone</label>
@@ -344,7 +356,7 @@
                     <input type="text" name="keyword" placeholder="Saisissez un nom ou un numéro..." style="flex: 1;" value="${param.keyword}">
                     <button type="submit" class="btn btn-primary">🔍 Rechercher</button>
                     <c:if test="${not empty param.keyword}">
-                        <a href="${pageContext.request.contextPath}/client" class="btn btn-secondary">🔄 Afficher tout</a>
+                        <a href="${pageContext.request.contextPath}/ClientServlet" class="btn btn-secondary">🔄 Afficher tout</a>
                     </c:if>
                 </div>
             </div>

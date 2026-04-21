@@ -18,6 +18,8 @@ public class StatsApiServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
+        System.out.println("=== StatsApiServlet doGet() appelée ===");
+
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
 
@@ -29,9 +31,16 @@ public class StatsApiServlet extends HttpServlet {
             ReservationDAO reservationDAO = new ReservationDAO();
 
             int nbVoitures = voitureDAO.findAll().size();
+            System.out.println("nbVoitures = " + nbVoitures);
+
             int nbClients = clientDAO.findAll().size();
+            System.out.println("nbClients = " + nbClients);
+
             int nbReservations = reservationDAO.findAll().size();
+            System.out.println("nbReservations = " + nbReservations);
+
             int totalRecette = reservationDAO.getRecetteTotale();
+            System.out.println("totalRecette = " + totalRecette);
 
             json.append("{");
             json.append("\"nbVoitures\":").append(nbVoitures).append(",");
@@ -41,16 +50,17 @@ public class StatsApiServlet extends HttpServlet {
             json.append("}");
 
         } catch (SQLException e) {
-            // En cas d'erreur, retourner des valeurs par défaut
+            System.err.println("ERREUR dans StatsApiServlet: " + e.getMessage());
+            e.printStackTrace();
             json.append("{");
             json.append("\"nbVoitures\":0,");
             json.append("\"nbClients\":0,");
             json.append("\"nbReservations\":0,");
             json.append("\"totalRecette\":0");
             json.append("}");
-            e.printStackTrace();
         }
 
+        System.out.println("Réponse JSON: " + json.toString());
         response.getWriter().write(json.toString());
     }
 }

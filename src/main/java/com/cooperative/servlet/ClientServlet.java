@@ -11,206 +11,140 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-@WebServlet("/client/*")
+@WebServlet("/ClientServlet")
 public class ClientServlet extends HttpServlet {
     private ClientDAO clientDAO = new ClientDAO();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        String pathInfo = request.getPathInfo();
+        String action = request.getParameter("action");
 
-        System.out.println("GET ClientServlet - PathInfo: " + pathInfo);
+        System.out.println("=== ClientServlet doGet ===");
+        System.out.println("Action: " + action);
 
         try {
-            if (pathInfo == null || pathInfo.equals("/") || pathInfo.equals("/list")) {
-                listClients(request, response);
-            } else if (pathInfo.equals("/edit")) {
-                showEditForm(request, response);
-            } else if (pathInfo.equals("/delete")) {
-                deleteClient(request, response);
-            } else if (pathInfo.equals("/search")) {
-                searchClients(request, response);
-            } else {
-                listClients(request, response);
+            // Gestion des actions GET
+            if ("delete".equals(action)) {
+                String idParam = request.getParameter("id");
+                if (idParam != null && !idParam.isEmpty()) {
+                    int id = Integer.parseInt(idParam);
+                    clientDAO.delete(id);
+                    request.setAttribute("success", "deleted");
+                    System.out.println("Client supprimé ID: " + id);
+                }
             }
+            else if ("edit".equals(action)) {
+                String idParam = request.getParameter("id");
+                if (idParam != null && !idParam.isEmpty()) {
+                    int id = Integer.parseInt(idParam);
+                    Client client = clientDAO.findById(id);
+                    request.setAttribute("clientToEdit", client);
+                    System.out.println("Client à modifier: " + client);
+                }
+            }
+            else if ("search".equals(action)) {
+                String keyword = request.getParameter("keyword");
+                if (keyword != null && !keyword.trim().isEmpty()) {
+                    List<Client> searchResults = clientDAO.searchByNomOrTel(keyword);
+                    request.setAttribute("searchResults", searchResults);
+                    request.setAttribute("keyword", keyword);
+                    System.out.println("Recherche: " + keyword + " - Résultats: " + searchResults.size());
+                }
+            }
+
+            // TOUJOURS charger la liste complète des clients
+            List<Client> clients = clientDAO.findAll();
+            request.setAttribute("clients", clients);
+            System.out.println("Total clients chargés: " + clients.size());
+
         } catch (SQLException e) {
+            System.err.println("Erreur SQL: " + e.getMessage());
             e.printStackTrace();
             request.setAttribute("error", "Erreur base de données: " + e.getMessage());
-            try {
-                listClients(request, response);
-            } catch (Exception ex) {
-                throw new ServletException(ex);
-            }
         } catch (NumberFormatException e) {
+            System.err.println("Erreur format ID: " + e.getMessage());
             request.setAttribute("error", "ID invalide");
-            try {
-                listClients(request, response);
-            } catch (Exception ex) {
-                throw new ServletException(ex);
-            }
         }
+
+        // Redirection vers la JSP
+        request.getRequestDispatcher("/client/client.jsp").forward(request, response);
     }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        String pathInfo = request.getPathInfo();
+        String action = request.getParameter("action");
 
-        System.out.println("POST ClientServlet - PathInfo: " + pathInfo);
+        System.out.println("=== ClientServlet doPost ===");
+        System.out.println("Action: " + action);
 
         try {
-            if (pathInfo == null) {
-                listClients(request, response);
-                return;
+            if ("insert".equals(action)) {
+                // Récupération des paramètres
+                String nom = request.getParameter("nom");
+                String tel = request.getParameter("numtel");
+
+                System.out.println("Insert - Nom: " + nom + ", Tél: " + tel);
+
+                if (nom == null || nom.trim().isEmpty()) {
+                    request.setAttribute("error", "Le nom est requis");
+                } else if (tel == null || tel.trim().isEmpty()) {
+                    request.setAttribute("error", "Le numéro de téléphone est requis");
+                } else {
+                    Client client = new Client();
+                    client.setNom(nom.trim());
+                    client.setNumtel(tel.trim());
+                    clientDAO.create(client);
+                    request.setAttribute("success", "added");
+                    System.out.println("Client ajouté avec succès");
+                }
+            }
+            else if ("update".equals(action)) {
+                // Récupération des paramètres
+                String idParam = request.getParameter("idclt");
+                String nom = request.getParameter("nom");
+                String tel = request.getParameter("numtel");
+
+                System.out.println("Update - ID: " + idParam + ", Nom: " + nom + ", Tél: " + tel);
+
+                if (idParam == null || idParam.isEmpty()) {
+                    request.setAttribute("error", "ID du client manquant");
+                } else if (nom == null || nom.trim().isEmpty()) {
+                    request.setAttribute("error", "Le nom est requis");
+                } else if (tel == null || tel.trim().isEmpty()) {
+                    request.setAttribute("error", "Le numéro de téléphone est requis");
+                } else {
+                    Client client = new Client();
+                    client.setIdclt(Integer.parseInt(idParam));
+                    client.setNom(nom.trim());
+                    client.setNumtel(tel.trim());
+                    clientDAO.update(client);
+                    request.setAttribute("success", "updated");
+                    // Supprimer l'attribut d'édition
+                    request.removeAttribute("clientToEdit");
+                    System.out.println("Client modifié avec succès");
+                }
+            }
+            else {
+                System.out.println("Action non reconnue: " + action);
             }
 
-            if (pathInfo.equals("/insert")) {
-                insertClient(request, response);
-            } else if (pathInfo.equals("/update")) {
-                updateClient(request, response);
-            } else {
-                listClients(request, response);
-            }
+            // TOUJOURS recharger la liste complète
+            List<Client> clients = clientDAO.findAll();
+            request.setAttribute("clients", clients);
+            System.out.println("Total clients après opération: " + clients.size());
+
         } catch (SQLException e) {
+            System.err.println("Erreur SQL: " + e.getMessage());
             e.printStackTrace();
             request.setAttribute("error", "Erreur base de données: " + e.getMessage());
-          //  listClients(request, response);
+        } catch (NumberFormatException e) {
+            System.err.println("Erreur format ID: " + e.getMessage());
+            request.setAttribute("error", "Format d'ID invalide");
         }
-    }
 
-    private void listClients(HttpServletRequest request, HttpServletResponse response)
-            throws SQLException, ServletException, IOException {
-        List<Client> clients = clientDAO.findAll();
-        request.setAttribute("clients", clients);
+        // Redirection vers la JSP
         request.getRequestDispatcher("/client/client.jsp").forward(request, response);
-    }
-
-    private void showEditForm(HttpServletRequest request, HttpServletResponse response)
-            throws SQLException, ServletException, IOException {
-        String idParam = request.getParameter("id");
-        if (idParam == null || idParam.isEmpty()) {
-            request.setAttribute("error", "ID du client manquant");
-            listClients(request, response);
-            return;
-        }
-
-        try {
-            int id = Integer.parseInt(idParam);
-            Client client = clientDAO.findById(id);
-            if (client == null) {
-                request.setAttribute("error", "Client non trouvé");
-            } else {
-                request.setAttribute("client", client);
-            }
-        } catch (NumberFormatException e) {
-            request.setAttribute("error", "Format d'ID invalide");
-        }
-
-        listClients(request, response);
-    }
-
-    private void insertClient(HttpServletRequest request, HttpServletResponse response)
-            throws SQLException, ServletException, IOException {
-        String nom = request.getParameter("nom");
-        String numtel = request.getParameter("numtel");
-
-        if (nom == null || nom.trim().isEmpty()) {
-            request.setAttribute("error", "Le nom est requis");
-            listClients(request, response);
-            return;
-        }
-
-        if (numtel == null || numtel.trim().isEmpty()) {
-            request.setAttribute("error", "Le numéro de téléphone est requis");
-            listClients(request, response);
-            return;
-        }
-
-        try {
-            Client client = new Client();
-            client.setNom(nom.trim());
-            client.setNumtel(numtel.trim());
-            clientDAO.create(client);
-            request.setAttribute("success", "added");
-        } catch (SQLException e) {
-            if (e.getMessage().contains("Duplicate")) {
-                request.setAttribute("error", "Ce numéro de téléphone existe déjà");
-            } else {
-                request.setAttribute("error", "Erreur lors de l'insertion: " + e.getMessage());
-            }
-        }
-
-        listClients(request, response);
-    }
-
-    private void updateClient(HttpServletRequest request, HttpServletResponse response)
-            throws SQLException, ServletException, IOException {
-        String idParam = request.getParameter("idclt");
-        if (idParam == null || idParam.isEmpty()) {
-            request.setAttribute("error", "ID du client manquant");
-            listClients(request, response);
-            return;
-        }
-
-        String nom = request.getParameter("nom");
-        String numtel = request.getParameter("numtel");
-
-        if (nom == null || nom.trim().isEmpty()) {
-            request.setAttribute("error", "Le nom est requis");
-            listClients(request, response);
-            return;
-        }
-
-        try {
-            int id = Integer.parseInt(idParam);
-            Client client = new Client();
-            client.setIdclt(id);
-            client.setNom(nom.trim());
-            client.setNumtel(numtel.trim());
-            clientDAO.update(client);
-            request.setAttribute("success", "updated");
-        } catch (NumberFormatException e) {
-            request.setAttribute("error", "Format d'ID invalide");
-        } catch (SQLException e) {
-            request.setAttribute("error", "Erreur lors de la mise à jour: " + e.getMessage());
-        }
-
-        listClients(request, response);
-    }
-
-    private void deleteClient(HttpServletRequest request, HttpServletResponse response)
-            throws SQLException, ServletException, IOException {
-        String idParam = request.getParameter("id");
-        if (idParam == null || idParam.isEmpty()) {
-            request.setAttribute("error", "ID du client manquant");
-            listClients(request, response);
-            return;
-        }
-
-        try {
-            int id = Integer.parseInt(idParam);
-            clientDAO.delete(id);
-            request.setAttribute("success", "deleted");
-        } catch (NumberFormatException e) {
-            request.setAttribute("error", "Format d'ID invalide");
-        } catch (SQLException e) {
-            request.setAttribute("error", "Erreur lors de la suppression: " + e.getMessage());
-        }
-
-        listClients(request, response);
-    }
-
-    private void searchClients(HttpServletRequest request, HttpServletResponse response)
-            throws SQLException, ServletException, IOException {
-        String keyword = request.getParameter("keyword");
-
-        if (keyword != null && !keyword.trim().isEmpty()) {
-            List<Client> searchResults = clientDAO.searchByNomOrTel(keyword);
-            request.setAttribute("searchResults", searchResults);
-            request.setAttribute("keyword", keyword);
-        }
-
-        listClients(request, response);
     }
 }

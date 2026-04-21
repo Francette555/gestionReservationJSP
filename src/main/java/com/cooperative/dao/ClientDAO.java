@@ -24,7 +24,9 @@ public class ClientDAO {
                 client.setNom(rs.getString("nom"));
                 client.setNumtel(rs.getString("numtel"));
                 clients.add(client);
-                System.out.println("Client trouvé: " + client.getNom());
+                System.out.println("  Client trouvé: ID=" + client.getIdclt() +
+                        ", Nom=" + client.getNom() +
+                        ", Tél=" + client.getNumtel());
             }
             System.out.println("Total clients trouvés: " + clients.size());
         } catch (SQLException e) {
@@ -39,8 +41,8 @@ public class ClientDAO {
         String sql = "INSERT INTO CLIENT (nom, numtel) VALUES (?, ?)";
 
         System.out.println("=== ClientDAO.create() ===");
-        System.out.println("Nom: " + client.getNom());
-        System.out.println("Tél: " + client.getNumtel());
+        System.out.println("  Nom: " + client.getNom());
+        System.out.println("  Tél: " + client.getNumtel());
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -48,12 +50,12 @@ public class ClientDAO {
             pstmt.setString(1, client.getNom());
             pstmt.setString(2, client.getNumtel());
             int affectedRows = pstmt.executeUpdate();
-            System.out.println("Lignes affectées: " + affectedRows);
+            System.out.println("  Lignes affectées: " + affectedRows);
 
             try (ResultSet rs = pstmt.getGeneratedKeys()) {
                 if (rs.next()) {
                     client.setIdclt(rs.getInt(1));
-                    System.out.println("ID généré: " + client.getIdclt());
+                    System.out.println("  ID généré: " + client.getIdclt());
                 }
             }
         } catch (SQLException e) {
@@ -78,7 +80,7 @@ public class ClientDAO {
                     client.setIdclt(rs.getInt("idclt"));
                     client.setNom(rs.getString("nom"));
                     client.setNumtel(rs.getString("numtel"));
-                    System.out.println("Client trouvé: " + client.getNom());
+                    System.out.println("  Client trouvé: " + client.getNom());
                     return client;
                 }
             }
@@ -87,7 +89,7 @@ public class ClientDAO {
             e.printStackTrace();
             throw e;
         }
-        System.out.println("Aucun client trouvé avec l'ID: " + id);
+        System.out.println("  Aucun client trouvé avec l'ID: " + id);
         return null;
     }
 
@@ -109,7 +111,7 @@ public class ClientDAO {
                     client.setNom(rs.getString("nom"));
                     client.setNumtel(rs.getString("numtel"));
                     clients.add(client);
-                    System.out.println("Résultat recherche: " + client.getNom());
+                    System.out.println("  Résultat recherche: " + client.getNom());
                 }
             }
         } catch (SQLException e) {
@@ -125,9 +127,9 @@ public class ClientDAO {
         String sql = "UPDATE CLIENT SET nom = ?, numtel = ? WHERE idclt = ?";
 
         System.out.println("=== ClientDAO.update() ===");
-        System.out.println("ID: " + client.getIdclt());
-        System.out.println("Nom: " + client.getNom());
-        System.out.println("Tél: " + client.getNumtel());
+        System.out.println("  ID: " + client.getIdclt());
+        System.out.println("  Nom: " + client.getNom());
+        System.out.println("  Tél: " + client.getNumtel());
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -136,7 +138,7 @@ public class ClientDAO {
             pstmt.setString(2, client.getNumtel());
             pstmt.setInt(3, client.getIdclt());
             int affectedRows = pstmt.executeUpdate();
-            System.out.println("Lignes affectées: " + affectedRows);
+            System.out.println("  Lignes affectées: " + affectedRows);
         } catch (SQLException e) {
             System.err.println("Erreur SQL dans update(): " + e.getMessage());
             e.printStackTrace();
@@ -154,7 +156,7 @@ public class ClientDAO {
 
             pstmt.setInt(1, id);
             int affectedRows = pstmt.executeUpdate();
-            System.out.println("Lignes affectées: " + affectedRows);
+            System.out.println("  Lignes affectées: " + affectedRows);
         } catch (SQLException e) {
             System.err.println("Erreur SQL dans delete(): " + e.getMessage());
             e.printStackTrace();
