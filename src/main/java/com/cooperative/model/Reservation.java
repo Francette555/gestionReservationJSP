@@ -17,6 +17,9 @@ public class Reservation {
     private String nomClient;
     private String designVoiture;
     private int frais;
+    // Ajoutez ces attributs dans la classe Reservation
+    private String numtel;
+
 
     public Reservation() {}
 
@@ -47,4 +50,13 @@ public class Reservation {
     public int getResteAPayer() {
         return frais - montantAvance;
     }
+    // Ajoutez ces getters et setters
+    public String getNumtel() { return numtel; }
+    public void setNumtel(String numtel) { this.numtel = numtel; }
+    // Dans Reservation.java, ajoutez cet attribut
+    private String designVoitureType;
+
+    // Ajoutez ces getter et setter
+    public String getDesignVoitureType() { return designVoitureType; }
+    public void setDesignVoitureType(String designVoitureType) { this.designVoitureType = designVoitureType; }
 }

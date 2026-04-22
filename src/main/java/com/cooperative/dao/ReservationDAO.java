@@ -138,28 +138,6 @@ public class ReservationDAO {
         return placesLibres;
     }
 
-    // Obtenir les voyageurs par type de paiement
-    public List<Reservation> getVoyageursParPaiement(String idvoit, String typePaiement) throws SQLException {
-        List<Reservation> reservations = new ArrayList<>();
-        String sql = "SELECT r.*, c.nom as nomClient, v.Design as designVoiture, v.frais " +
-                "FROM RESERVER r " +
-                "JOIN CLIENT c ON r.idclt = c.idclt " +
-                "JOIN VOITURE v ON r.idvoit = v.idvoit " +
-                "WHERE r.idvoit = ? AND r.payement = ?";
-
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setString(1, idvoit);
-            pstmt.setString(2, typePaiement);
-            try (ResultSet rs = pstmt.executeQuery()) {
-                while (rs.next()) {
-                    reservations.add(extractReservation(rs));
-                }
-            }
-        }
-        return reservations;
-    }
 
     // Recette totale = somme des frais de toutes les réservations
     public int getRecetteTotale() throws SQLException {
@@ -197,11 +175,59 @@ public class ReservationDAO {
         res.setPlace(rs.getInt("place"));
         res.setDateReserv(rs.getTimestamp("date_reserv"));
         res.setDateVoyage(rs.getDate("date_voyage"));
+
         res.setPayement(rs.getString("payement"));
         res.setMontantAvance(rs.getInt("montant_avance"));
         res.setNomClient(rs.getString("nomClient"));
         res.setDesignVoiture(rs.getString("designVoiture"));
         res.setFrais(rs.getInt("frais"));
         return res;
+    }
+
+    // Ajoutez cette méthode dans ReservationDAO.java
+    public List<Reservation> getVoyageursParPaiement(String idvoit, String typePaiement) throws SQLException {
+        List<Reservation> reservations = new ArrayList<>();
+        String sql = "SELECT r.*, c.nom as nomClient, c.numtel, v.Design as designVoiture, v.frais " +
+                "FROM RESERVER r " +
+                "JOIN CLIENT c ON r.idclt = c.idclt " +
+                "JOIN VOITURE v ON r.idvoit = v.idvoit " +
+                "WHERE r.idvoit = ? AND r.payement = ? " +
+                "ORDER BY r.date_reserv DESC";
+
+        System.out.println("=== ReservationDAO.getVoyageursParPaiement() ===");
+        System.out.println("idvoit: " + idvoit + ", typePaiement: " + typePaiement);
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, idvoit);
+            pstmt.setString(2, typePaiement);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    Reservation r = new Reservation();
+                    r.setIdreserv(rs.getString("idreserv"));
+                    r.setIdvoit(rs.getString("idvoit"));
+                    r.setIdclt(rs.getInt("idclt"));
+                    r.setPlace(rs.getInt("place"));
+                    r.setDateReserv(rs.getTimestamp("date_reserv"));
+                    r.setDateVoyage(rs.getDate("date_voyage"));
+                    r.setPayement(rs.getString("payement"));
+                    r.setMontantAvance(rs.getInt("montant_avance"));
+                    r.setNomClient(rs.getString("nomClient"));
+                    r.setNumtel(rs.getString("numtel"));
+                    r.setDesignVoiture(rs.getString("designVoiture"));
+                    r.setFrais(rs.getInt("frais"));
+                    reservations.add(r);
+                    System.out.println("  Réservation trouvée: " + r.getIdreserv() + " - " + r.getNomClient());
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Erreur SQL dans getVoyageursParPaiement(): " + e.getMessage());
+            e.printStackTrace();
+            throw e;
+        }
+        System.out.println("Total réservations: " + reservations.size());
+        return reservations;
     }
 }

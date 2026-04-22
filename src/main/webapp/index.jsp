@@ -388,15 +388,15 @@
 
         <div class="nav-section">
             <div class="nav-title">Gestion</div>
-            <a href="${pageContext.request.contextPath}/voiture/voiture.jsp" class="nav-item">
+            <a href="${pageContext.request.contextPath}/VoitureServlet" class="nav-item">
                 <span class="icon">🚗</span>
                 <span>Gestion des Voitures</span>
             </a>
-            <a href="${pageContext.request.contextPath}/client/client.jsp" class="nav-item">
+            <a href="${pageContext.request.contextPath}/ClientServlet" class="nav-item">
                 <span class="icon">👥</span>
                 <span>Gestion des Clients</span>
             </a>
-            <a href="${pageContext.request.contextPath}/reservation/reservation.jsp" class="nav-item">
+            <a href="${pageContext.request.contextPath}/ReservationServlet" class="nav-item">
                 <span class="icon">📅</span>
                 <span>Gestion des Réservations</span>
             </a>
@@ -404,19 +404,21 @@
 
         <div class="nav-section">
             <div class="nav-title">Finances</div>
-            <a href="${pageContext.request.contextPath}/paiement/paiement.jsp" class="nav-item">
+            <a href="${pageContext.request.contextPath}/paiement/paiement" class="nav-item">
                 <span class="icon">💰</span>
                 <span>Paiements</span>
             </a>
+
+
         </div>
 
-        <div class="nav-section">
+       <!-- <div class="nav-section">
             <div class="nav-title">Statistiques</div>
-            <a href="${pageContext.request.contextPath}/statistiques/statistiques.jsp" class="nav-item">
+            <a href="${pageContext.request.contextPath}/RecetteServlet" class="nav-item">
                 <span class="icon">📈</span>
                 <span>Statistiques</span>
             </a>
-        </div>
+        </div>-->
 
         <div class="nav-section">
             <div class="nav-title">Support</div>
@@ -491,27 +493,24 @@
 
         <!-- Raccourcis rapides -->
         <div class="shortcuts">
-            <a href="${pageContext.request.contextPath}/reservation/reservation.jsp" class="shortcut-btn">
+            <a href="${pageContext.request.contextPath}/ReservationServlet" class="shortcut-btn">
                 <span class="shortcut-icon">➕</span>
                 <span>Nouvelle réservation</span>
             </a>
-            <a href="${pageContext.request.contextPath}/client/client.jsp" class="shortcut-btn">
+            <a href="${pageContext.request.contextPath}/ClientServlet" class="shortcut-btn">
                 <span class="shortcut-icon">👤</span>
                 <span>Nouveau client</span>
             </a>
-            <a href="${pageContext.request.contextPath}/voiture/voiture.jsp" class="shortcut-btn">
+            <a href="${pageContext.request.contextPath}/VoitureServlet" class="shortcut-btn">
                 <span class="shortcut-icon">🚗</span>
                 <span>Nouvelle voiture</span>
             </a>
-            <a href="${pageContext.request.contextPath}/statistiques/statistiques.jsp" class="shortcut-btn">
-                <span class="shortcut-icon">📈</span>
-                <span>Voir statistiques</span>
-            </a>
+
         </div>
 
         <!-- Footer -->
         <div class="footer">
-            <p>© 2024 - Coopérative de Transport | Application de Gestion de Réservation v2.0</p>
+            <p>© 2026 - Coopérative de Transport | Application de Gestion de Réservation</p>
             <p>Tous droits réservés</p>
         </div>
     </div>

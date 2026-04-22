@@ -5,6 +5,7 @@ import com.cooperative.dao.ClientDAO;
 import com.cooperative.model.Reservation;
 import com.cooperative.model.Client;
 import com.itextpdf.text.*;
+import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 import java.io.IOException;
@@ -41,6 +42,7 @@ public class RecuServlet extends HttpServlet {
 
     private void generatePDF(HttpServletResponse response, Reservation reservation, Client client)
             throws DocumentException, IOException {
+
         response.setContentType("application/pdf");
         response.setHeader("Content-Disposition", "attachment; filename=recu_" + reservation.getIdreserv() + ".pdf");
 
@@ -48,63 +50,168 @@ public class RecuServlet extends HttpServlet {
         PdfWriter.getInstance(document, response.getOutputStream());
         document.open();
 
-        Font titleFont = new Font(Font.FontFamily.HELVETICA, 18, Font.BOLD);
-        Paragraph title = new Paragraph("COOPERATIVE DE TRANSPORT", titleFont);
+        // ========== EN-TÊTE ==========
+        Font titleFont = new Font(Font.FontFamily.HELVETICA, 16, Font.BOLD);
+        Font normalFont = new Font(Font.FontFamily.HELVETICA, 12, Font.NORMAL);
+        Font boldFont = new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD);
+        Font headerFont = new Font(Font.FontFamily.HELVETICA, 14, Font.BOLD);
+
+        // Titre principal
+        Paragraph title = new Paragraph("COOPÉRATIVE DE TRANSPORT", titleFont);
         title.setAlignment(Element.ALIGN_CENTER);
         document.add(title);
 
-        Paragraph subtitle = new Paragraph("RECU DE RESERVATION", new Font(Font.FontFamily.HELVETICA, 14, Font.BOLD));
+        document.add(new Paragraph(" "));
+
+        Paragraph subtitle = new Paragraph("REÇU DE RÉSERVATION", headerFont);
         subtitle.setAlignment(Element.ALIGN_CENTER);
         document.add(subtitle);
 
         document.add(new Paragraph(" "));
-
-        PdfPTable headerTable = new PdfPTable(2);
-        headerTable.setWidthPercentage(100);
-        headerTable.addCell("Reçu N°: " + reservation.getIdreserv());
-        headerTable.addCell("Date: " + new SimpleDateFormat("dd/MM/yyyy").format(new java.util.Date()));
-        document.add(headerTable);
-
         document.add(new Paragraph(" "));
 
+        // ========== NUMÉRO DU REÇU ==========
+        Paragraph recuNum = new Paragraph("Reçu N° " + reservation.getIdreserv(), boldFont);
+        recuNum.setAlignment(Element.ALIGN_CENTER);
+        document.add(recuNum);
+
+        document.add(new Paragraph(" "));
+        document.add(new Paragraph(" "));
+
+        // ========== TABLEAU DES INFORMATIONS (2 colonnes) ==========
         PdfPTable infoTable = new PdfPTable(2);
-        infoTable.setWidthPercentage(100);
-        infoTable.setWidths(new float[]{30, 70});
+        infoTable.setWidthPercentage(90);
+        infoTable.setHorizontalAlignment(Element.ALIGN_CENTER);
+        infoTable.setWidths(new float[]{35, 65});
 
-        infoTable.addCell("Date du réservation:");
-        infoTable.addCell(new SimpleDateFormat("dd MMMM yyyy à HH:mm").format(reservation.getDateReserv()));
+        // Date de réservation
+        PdfPCell cell1 = new PdfPCell(new Phrase("Date du réservation :", boldFont));
+        cell1.setBorder(Rectangle.NO_BORDER);
+        cell1.setPadding(5);
+        infoTable.addCell(cell1);
 
-        infoTable.addCell("Date du voyage:");
-        infoTable.addCell(new SimpleDateFormat("dd MMMM yyyy").format(reservation.getDateVoyage()));
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMMM yyyy");
+        SimpleDateFormat dateTimeFormat = new SimpleDateFormat("dd MMMM yyyy 'à' HH:mm");
+        String dateReservStr = dateTimeFormat.format(reservation.getDateReserv());
+        PdfPCell cell2 = new PdfPCell(new Phrase(dateReservStr, normalFont));
+        cell2.setBorder(Rectangle.NO_BORDER);
+        cell2.setPadding(5);
+        infoTable.addCell(cell2);
 
-        infoTable.addCell("Nom du Client:");
-        infoTable.addCell(client.getNom());
+        // Date du voyage
+        cell1 = new PdfPCell(new Phrase("Date du voyage :", boldFont));
+        cell1.setBorder(Rectangle.NO_BORDER);
+        cell1.setPadding(5);
+        infoTable.addCell(cell1);
 
-        infoTable.addCell("Contact:");
-        infoTable.addCell(client.getNumtel() != null ? client.getNumtel() : "-");
+        String dateVoyageStr = dateFormat.format(reservation.getDateVoyage());
+        cell2 = new PdfPCell(new Phrase(dateVoyageStr, normalFont));
+        cell2.setBorder(Rectangle.NO_BORDER);
+        cell2.setPadding(5);
+        infoTable.addCell(cell2);
 
-        infoTable.addCell("Voiture N°:");
-        infoTable.addCell(reservation.getIdvoit() + " / " + reservation.getDesignVoiture());
+        // Nom du Client
+        cell1 = new PdfPCell(new Phrase("Nom du Client :", boldFont));
+        cell1.setBorder(Rectangle.NO_BORDER);
+        cell1.setPadding(5);
+        infoTable.addCell(cell1);
 
-        infoTable.addCell("Place:");
-        infoTable.addCell(String.valueOf(reservation.getPlace()));
+        String clientInfo = client.getNom() + " / Contact : " + (client.getNumtel() != null ? client.getNumtel() : "-");
+        cell2 = new PdfPCell(new Phrase(clientInfo, normalFont));
+        cell2.setBorder(Rectangle.NO_BORDER);
+        cell2.setPadding(5);
+        infoTable.addCell(cell2);
 
-        infoTable.addCell("Frais:");
-        infoTable.addCell(String.format("%,d Ar", reservation.getFrais()));
+        // Voiture et Type
+        cell1 = new PdfPCell(new Phrase("Voiture :", boldFont));
+        cell1.setBorder(Rectangle.NO_BORDER);
+        cell1.setPadding(5);
+        infoTable.addCell(cell1);
 
-        infoTable.addCell("Paiement:");
-        infoTable.addCell(reservation.getPayement());
+        String typeVoiture = "";
+        if ("simple".equals(reservation.getDesignVoitureType())) {
+            typeVoiture = "Simple";
+        } else if ("premium".equals(reservation.getDesignVoitureType())) {
+            typeVoiture = "Premium";
+        } else if ("VIP".equals(reservation.getDesignVoitureType())) {
+            typeVoiture = "VIP";
+        } else {
+            typeVoiture = reservation.getDesignVoitureType();
+        }
 
-        infoTable.addCell("Montant Avance:");
-        infoTable.addCell(String.format("%,d Ar", reservation.getMontantAvance()));
+        String voitureInfo = "N°" + reservation.getIdvoit() + " / Type de Voiture : " + typeVoiture + " / Place : " + reservation.getPlace();
+        cell2 = new PdfPCell(new Phrase(voitureInfo, normalFont));
+        cell2.setBorder(Rectangle.NO_BORDER);
+        cell2.setPadding(5);
+        infoTable.addCell(cell2);
 
-        infoTable.addCell("Reste:");
-        infoTable.addCell(String.format("%,d Ar", reservation.getResteAPayer()));
+        // Frais
+        cell1 = new PdfPCell(new Phrase("Frais :", boldFont));
+        cell1.setBorder(Rectangle.NO_BORDER);
+        cell1.setPadding(5);
+        infoTable.addCell(cell1);
+
+        String fraisStr = String.format("%,d Ar", reservation.getFrais());
+        cell2 = new PdfPCell(new Phrase(fraisStr, normalFont));
+        cell2.setBorder(Rectangle.NO_BORDER);
+        cell2.setPadding(5);
+        infoTable.addCell(cell2);
+
+        // Paiement
+        cell1 = new PdfPCell(new Phrase("Paiement :", boldFont));
+        cell1.setBorder(Rectangle.NO_BORDER);
+        cell1.setPadding(5);
+        infoTable.addCell(cell1);
+
+        String payementLibelle = "";
+        if ("sans avance".equals(reservation.getPayement())) {
+            payementLibelle = "Sans Avance";
+        } else if ("avec avance".equals(reservation.getPayement())) {
+            payementLibelle = "Avec Avance";
+        } else if ("tout paye".equals(reservation.getPayement())) {
+            payementLibelle = "Tout Payé";
+        } else {
+            payementLibelle = reservation.getPayement();
+        }
+
+        cell2 = new PdfPCell(new Phrase(payementLibelle, normalFont));
+        cell2.setBorder(Rectangle.NO_BORDER);
+        cell2.setPadding(5);
+        infoTable.addCell(cell2);
+
+        // Montant Avance / Reste
+        if ("avec avance".equals(reservation.getPayement())) {
+            cell1 = new PdfPCell(new Phrase("Montant Avance :", boldFont));
+            cell1.setBorder(Rectangle.NO_BORDER);
+            cell1.setPadding(5);
+            infoTable.addCell(cell1);
+
+            String avanceInfo = String.format("%,d Ar / Reste : %,d Ar", reservation.getMontantAvance(), reservation.getResteAPayer());
+            cell2 = new PdfPCell(new Phrase(avanceInfo, normalFont));
+            cell2.setBorder(Rectangle.NO_BORDER);
+            cell2.setPadding(5);
+            infoTable.addCell(cell2);
+        } else if ("tout paye".equals(reservation.getPayement())) {
+            cell1 = new PdfPCell(new Phrase("Montant payé :", boldFont));
+            cell1.setBorder(Rectangle.NO_BORDER);
+            cell1.setPadding(5);
+            infoTable.addCell(cell1);
+
+            cell2 = new PdfPCell(new Phrase(String.format("%,d Ar", reservation.getMontantAvance()), normalFont));
+            cell2.setBorder(Rectangle.NO_BORDER);
+            cell2.setPadding(5);
+            infoTable.addCell(cell2);
+        }
 
         document.add(infoTable);
 
         document.add(new Paragraph(" "));
-        Paragraph footer = new Paragraph("Merci de votre confiance !", new Font(Font.FontFamily.HELVETICA, 10, Font.ITALIC));
+        document.add(new Paragraph(" "));
+        document.add(new Paragraph(" "));
+
+        // ========== PIED DE PAGE ==========
+        Font footerFont = new Font(Font.FontFamily.HELVETICA, 10, Font.ITALIC);
+        Paragraph footer = new Paragraph("Merci de votre confiance !", footerFont);
         footer.setAlignment(Element.ALIGN_CENTER);
         document.add(footer);
 

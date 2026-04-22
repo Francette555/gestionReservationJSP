@@ -17,7 +17,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-@WebServlet("/reservation")
+@WebServlet("/ReservationServlet")
 public class ReservationServlet extends HttpServlet {
     private ReservationDAO reservationDAO = new ReservationDAO();
     private ClientDAO clientDAO = new ClientDAO();
@@ -26,149 +26,170 @@ public class ReservationServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        String action = request.getPathInfo();
+        String action = request.getParameter("action");
 
-        System.out.println("GET ReservationServlet - Action: " + action);
+        System.out.println("=== ReservationServlet doGet ===");
+        System.out.println("Action: " + action);
 
         try {
-            if (action == null || action.equals("/") || action.equals("/list")) {
-                listReservations(request, response);
-            } else if (action.equals("/add")) {
-                showAddForm(request, response);
-            } else if (action.equals("/edit")) {
-                showEditForm(request, response);
-            } else if (action.equals("/delete")) {
-                deleteReservation(request, response);
-            } else {
-                listReservations(request, response);
+            // Gestion des actions GET
+            if ("delete".equals(action)) {
+                String idParam = request.getParameter("id");
+                if (idParam != null && !idParam.isEmpty()) {
+                    reservationDAO.delete(idParam);
+                    request.setAttribute("success", "deleted");
+                    System.out.println("Réservation supprimée ID: " + idParam);
+                }
             }
+            else if ("edit".equals(action)) {
+                String idParam = request.getParameter("id");
+                if (idParam != null && !idParam.isEmpty()) {
+                    Reservation reservation = reservationDAO.findById(idParam);
+                    request.setAttribute("reservationToEdit", reservation);
+                    System.out.println("Réservation à modifier: " + reservation.getIdreserv());
+                }
+            }
+
+            // TOUJOURS charger la liste complète
+            List<Reservation> reservations = reservationDAO.findAll();
+            List<Client> clients = clientDAO.findAll();
+            List<Voiture> voitures = voitureDAO.findAll();
+
+            request.setAttribute("reservations", reservations);
+            request.setAttribute("clients", clients);
+            request.setAttribute("voitures", voitures);
+
+            System.out.println("Total réservations chargées: " + reservations.size());
+            System.out.println("Total clients chargés: " + clients.size());
+            System.out.println("Total voitures chargées: " + voitures.size());
+
         } catch (SQLException e) {
+            System.err.println("Erreur SQL: " + e.getMessage());
             e.printStackTrace();
-            throw new ServletException(e);
+            request.setAttribute("error", "Erreur base de données: " + e.getMessage());
+        } catch (NumberFormatException e) {
+            System.err.println("Erreur format ID: " + e.getMessage());
+            request.setAttribute("error", "ID invalide");
         }
+
+        // Redirection vers la JSP
+        request.getRequestDispatcher("/reservation/reservation.jsp").forward(request, response);
     }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        String action = request.getPathInfo();
+        String action = request.getParameter("action");
 
-        System.out.println("POST ReservationServlet - Action: " + action);
+        System.out.println("=== ReservationServlet doPost ===");
+        System.out.println("Action: " + action);
 
         try {
-            if (action == null) {
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST);
-                return;
+            if ("insert".equals(action)) {
+                // Récupération des paramètres
+                String idvoit = request.getParameter("idvoit");
+                String idcltStr = request.getParameter("idclt");
+                String placeStr = request.getParameter("place");
+                String dateVoyageStr = request.getParameter("date_voyage");
+                String payement = request.getParameter("payement");
+                String montantAvanceStr = request.getParameter("montant_avance");
+
+                System.out.println("Insert - ID Voiture: " + idvoit + ", ID Client: " + idcltStr + ", Place: " + placeStr + ", Date: " + dateVoyageStr + ", Paiement: " + payement + ", Avance: " + montantAvanceStr);
+
+                // Validation
+                if (idvoit == null || idvoit.trim().isEmpty()) {
+                    request.setAttribute("error", "La voiture est requise");
+                } else if (idcltStr == null || idcltStr.trim().isEmpty()) {
+                    request.setAttribute("error", "Le client est requis");
+                } else if (placeStr == null || placeStr.trim().isEmpty()) {
+                    request.setAttribute("error", "Le numéro de place est requis");
+                } else if (dateVoyageStr == null || dateVoyageStr.trim().isEmpty()) {
+                    request.setAttribute("error", "La date de voyage est requise");
+                } else {
+                    // Génération d'un ID unique
+                    String idreserv = "RES" + System.currentTimeMillis();
+
+                    Reservation reservation = new Reservation();
+                    reservation.setIdreserv(idreserv);
+                    reservation.setIdvoit(idvoit.trim());
+                    reservation.setIdclt(Integer.parseInt(idcltStr));
+                    reservation.setPlace(Integer.parseInt(placeStr));
+                    reservation.setDateReserv(new Timestamp(System.currentTimeMillis()));
+                    reservation.setDateVoyage(Date.valueOf(dateVoyageStr));
+                    reservation.setPayement(payement);
+                    reservation.setMontantAvance(montantAvanceStr != null && !montantAvanceStr.isEmpty() ? Integer.parseInt(montantAvanceStr) : 0);
+
+                    reservationDAO.create(reservation);
+                    request.setAttribute("success", "added");
+                    System.out.println("Réservation ajoutée avec succès - ID: " + idreserv);
+                }
+            }
+            else if ("update".equals(action)) {
+                // Récupération des paramètres
+                String idreserv = request.getParameter("idreserv");
+                String idvoit = request.getParameter("idvoit");
+                String idcltStr = request.getParameter("idclt");
+                String placeStr = request.getParameter("place");
+                String dateVoyageStr = request.getParameter("date_voyage");
+                String payement = request.getParameter("payement");
+                String montantAvanceStr = request.getParameter("montant_avance");
+
+                System.out.println("Update - ID: " + idreserv + ", ID Voiture: " + idvoit + ", ID Client: " + idcltStr + ", Place: " + placeStr + ", Date: " + dateVoyageStr);
+
+                if (idreserv == null || idreserv.trim().isEmpty()) {
+                    request.setAttribute("error", "L'ID de la réservation est requis");
+                } else if (idvoit == null || idvoit.trim().isEmpty()) {
+                    request.setAttribute("error", "La voiture est requise");
+                } else if (idcltStr == null || idcltStr.trim().isEmpty()) {
+                    request.setAttribute("error", "Le client est requis");
+                } else if (placeStr == null || placeStr.trim().isEmpty()) {
+                    request.setAttribute("error", "Le numéro de place est requis");
+                } else if (dateVoyageStr == null || dateVoyageStr.trim().isEmpty()) {
+                    request.setAttribute("error", "La date de voyage est requise");
+                } else {
+                    Reservation reservation = new Reservation();
+                    reservation.setIdreserv(idreserv.trim());
+                    reservation.setIdvoit(idvoit.trim());
+                    reservation.setIdclt(Integer.parseInt(idcltStr));
+                    reservation.setPlace(Integer.parseInt(placeStr));
+                    reservation.setDateVoyage(Date.valueOf(dateVoyageStr));
+                    reservation.setPayement(payement);
+                    reservation.setMontantAvance(montantAvanceStr != null && !montantAvanceStr.isEmpty() ? Integer.parseInt(montantAvanceStr) : 0);
+
+                    reservationDAO.update(reservation);
+                    request.setAttribute("success", "updated");
+                    request.removeAttribute("reservationToEdit");
+                    System.out.println("Réservation modifiée avec succès - ID: " + idreserv);
+                }
+            }
+            else {
+                System.out.println("Action non reconnue: " + action);
             }
 
-            if (action.equals("/insert")) {
-                insertReservation(request, response);
-            } else if (action.equals("/update")) {
-                updateReservation(request, response);
-            } else {
-                response.sendError(HttpServletResponse.SC_NOT_FOUND);
-            }
+            // TOUJOURS recharger la liste complète
+            List<Reservation> reservations = reservationDAO.findAll();
+            List<Client> clients = clientDAO.findAll();
+            List<Voiture> voitures = voitureDAO.findAll();
+
+            request.setAttribute("reservations", reservations);
+            request.setAttribute("clients", clients);
+            request.setAttribute("voitures", voitures);
+
+            System.out.println("Total réservations après opération: " + reservations.size());
+
         } catch (SQLException e) {
+            System.err.println("Erreur SQL: " + e.getMessage());
             e.printStackTrace();
-            throw new ServletException(e);
+            request.setAttribute("error", "Erreur base de données: " + e.getMessage());
+        } catch (NumberFormatException e) {
+            System.err.println("Erreur format nombre: " + e.getMessage());
+            request.setAttribute("error", "Format de nombre invalide pour les places ou l'avance");
+        } catch (IllegalArgumentException e) {
+            System.err.println("Erreur format date: " + e.getMessage());
+            request.setAttribute("error", "Format de date invalide (utilisez AAAA-MM-JJ)");
         }
-    }
 
-    private void listReservations(HttpServletRequest request, HttpServletResponse response)
-            throws SQLException, ServletException, IOException {
-        List<Reservation> reservations = reservationDAO.findAll();
-        List<Client> clients = clientDAO.findAll();
-        List<Voiture> voitures = voitureDAO.findAll();
-
-        request.setAttribute("reservations", reservations);
-        request.setAttribute("clients", clients);
-        request.setAttribute("voitures", voitures);
+        // Redirection vers la JSP
         request.getRequestDispatcher("/reservation/reservation.jsp").forward(request, response);
-    }
-
-    private void showAddForm(HttpServletRequest request, HttpServletResponse response)
-            throws SQLException, ServletException, IOException {
-        List<Client> clients = clientDAO.findAll();
-        List<Voiture> voitures = voitureDAO.findAll();
-        request.setAttribute("clients", clients);
-        request.setAttribute("voitures", voitures);
-        request.getRequestDispatcher("/reservation/reservation.jsp?action=add").forward(request, response);
-    }
-
-    private void showEditForm(HttpServletRequest request, HttpServletResponse response)
-            throws SQLException, ServletException, IOException {
-        String id = request.getParameter("id");
-        if (id == null || id.isEmpty()) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST);
-            return;
-        }
-
-        Reservation reservation = reservationDAO.findById(id);
-        List<Client> clients = clientDAO.findAll();
-        List<Voiture> voitures = voitureDAO.findAll();
-
-        request.setAttribute("reservation", reservation);
-        request.setAttribute("clients", clients);
-        request.setAttribute("voitures", voitures);
-        request.getRequestDispatcher("/reservation/reservation.jsp").forward(request, response);
-    }
-
-    private void insertReservation(HttpServletRequest request, HttpServletResponse response)
-            throws SQLException, IOException {
-        String idreserv = "RES" + System.currentTimeMillis();
-        String idvoit = request.getParameter("idvoit");
-        int idclt = Integer.parseInt(request.getParameter("idclt"));
-        int place = Integer.parseInt(request.getParameter("place"));
-        Date dateVoyage = Date.valueOf(request.getParameter("date_voyage"));
-        String payement = request.getParameter("payement");
-        int montantAvance = Integer.parseInt(request.getParameter("montant_avance"));
-
-        Reservation reservation = new Reservation();
-        reservation.setIdreserv(idreserv);
-        reservation.setIdvoit(idvoit);
-        reservation.setIdclt(idclt);
-        reservation.setPlace(place);
-        reservation.setDateReserv(new Timestamp(System.currentTimeMillis()));
-        reservation.setDateVoyage(dateVoyage);
-        reservation.setPayement(payement);
-        reservation.setMontantAvance(montantAvance);
-
-        reservationDAO.create(reservation);
-        response.sendRedirect(request.getContextPath() + "/reservation/reservation.jsp?success=added");
-    }
-
-    private void updateReservation(HttpServletRequest request, HttpServletResponse response)
-            throws SQLException, IOException {
-        String idreserv = request.getParameter("idreserv");
-        String idvoit = request.getParameter("idvoit");
-        int idclt = Integer.parseInt(request.getParameter("idclt"));
-        int place = Integer.parseInt(request.getParameter("place"));
-        Date dateVoyage = Date.valueOf(request.getParameter("date_voyage"));
-        String payement = request.getParameter("payement");
-        int montantAvance = Integer.parseInt(request.getParameter("montant_avance"));
-
-        Reservation reservation = new Reservation();
-        reservation.setIdreserv(idreserv);
-        reservation.setIdvoit(idvoit);
-        reservation.setIdclt(idclt);
-        reservation.setPlace(place);
-        reservation.setDateVoyage(dateVoyage);
-        reservation.setPayement(payement);
-        reservation.setMontantAvance(montantAvance);
-
-        reservationDAO.update(reservation);
-        response.sendRedirect(request.getContextPath() + "/reservation/reservation.jsp?success=updated");
-    }
-
-    private void deleteReservation(HttpServletRequest request, HttpServletResponse response)
-            throws SQLException, IOException {
-        String id = request.getParameter("id");
-        if (id == null || id.isEmpty()) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST);
-            return;
-        }
-
-        reservationDAO.delete(id);
-        response.sendRedirect(request.getContextPath() + "/reservation/reservation.jsp?success=deleted");
     }
 }

@@ -1,30 +1,20 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib uri="jakarta.tags.core" prefix="c" %>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <a href="index.jsp">🏠 Retour à l'accueil</a>
     <title>Gestion des Voitures - Parc Automobile</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #43cea2 0%, #185a9d 100%);
             min-height: 100vh;
             padding: 20px;
         }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
+        .container { max-width: 1400px; margin: 0 auto; }
         .main-header {
             background: white;
             border-radius: 15px;
@@ -33,7 +23,6 @@
             box-shadow: 0 10px 40px rgba(0,0,0,0.1);
             text-align: center;
         }
-
         .main-header h1 {
             background: linear-gradient(135deg, #43cea2 0%, #185a9d 100%);
             -webkit-background-clip: text;
@@ -42,32 +31,21 @@
             font-size: 2.5em;
             margin-bottom: 10px;
         }
-
-        .main-header p {
-            color: #666;
-            font-size: 1.1em;
-        }
-
+        .main-header p { color: #666; font-size: 1.1em; }
         .grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
             gap: 30px;
             margin-bottom: 30px;
         }
-
         .card {
             background: white;
             border-radius: 15px;
             padding: 25px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            transition: transform 0.3s ease;
         }
-
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
-        }
-
+        .card:hover { transform: translateY(-5px); }
         .card-header {
             border-bottom: 3px solid #43cea2;
             padding-bottom: 15px;
@@ -76,50 +54,18 @@
             align-items: center;
             gap: 10px;
         }
-
-        .card-header h2 {
-            color: #333;
-            font-size: 1.5em;
-            margin: 0;
-        }
-
-        .card-header .icon {
-            font-size: 1.8em;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: #555;
-            font-weight: 500;
-            font-size: 0.95em;
-        }
-
+        .card-header h2 { color: #333; font-size: 1.5em; }
+        .card-header .icon { font-size: 1.8em; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; color: #555; font-weight: 500; }
         .form-group input, .form-group select {
             width: 100%;
             padding: 12px;
             border: 2px solid #e0e0e0;
             border-radius: 8px;
             font-size: 14px;
-            transition: border-color 0.3s ease;
         }
-
-        .form-group input:focus, .form-group select:focus {
-            outline: none;
-            border-color: #43cea2;
-        }
-
-        .form-group small {
-            display: block;
-            margin-top: 5px;
-            color: #999;
-            font-size: 0.85em;
-        }
-
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: #43cea2; }
         .btn {
             display: inline-block;
             padding: 10px 20px;
@@ -129,155 +75,39 @@
             font-weight: 600;
             cursor: pointer;
             text-decoration: none;
-            transition: all 0.3s ease;
             margin-right: 10px;
         }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #43cea2 0%, #185a9d 100%);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(67, 206, 162, 0.4);
-        }
-
-        .btn-secondary {
-            background: #6c757d;
-            color: white;
-        }
-
-        .btn-secondary:hover {
-            background: #5a6268;
-        }
-
-        .btn-danger {
-            background: #dc3545;
-            color: white;
-        }
-
-        .btn-warning {
-            background: #ffc107;
-            color: #333;
-        }
-
-        .btn-sm {
-            padding: 5px 12px;
-            font-size: 12px;
-            margin: 0 3px;
-        }
-
-        .table-responsive {
-            overflow-x: auto;
-            margin-top: 20px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: white;
-            border-radius: 10px;
-            overflow: hidden;
-        }
-
-        thead {
-            background: linear-gradient(135deg, #43cea2 0%, #185a9d 100%);
-            color: white;
-        }
-
-        th, td {
-            padding: 12px 15px;
-            text-align: left;
-        }
-
-        tbody tr {
-            border-bottom: 1px solid #e0e0e0;
-            transition: background-color 0.3s ease;
-        }
-
-        tbody tr:hover {
-            background-color: #f8f9fa;
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .badge-simple { background: #17a2b8; color: white; }
-        .badge-premium { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; }
-        .badge-vip { background: linear-gradient(135deg, #f6d365 0%, #fda085 100%); color: #333; }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .stat-card {
-            background: white;
-            border-radius: 15px;
-            padding: 20px;
-            text-align: center;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-
-        .stat-card h3 {
-            font-size: 2.5em;
-            margin-bottom: 5px;
-        }
-
-        .stat-card p {
-            color: #666;
-            font-size: 0.9em;
-        }
-
-        .stat-card.primary {
-            background: linear-gradient(135deg, #43cea2 0%, #185a9d 100%);
-            color: white;
-        }
+        .btn-primary { background: linear-gradient(135deg, #43cea2 0%, #185a9d 100%); color: white; }
+        .btn-primary:hover { transform: translateY(-2px); }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-warning { background: #ffc107; color: #333; }
+        .btn-sm { padding: 5px 12px; font-size: 12px; margin: 0 3px; }
+        .table-responsive { overflow-x: auto; margin-top: 20px; }
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; }
+        thead { background: linear-gradient(135deg, #43cea2 0%, #185a9d 100%); color: white; }
+        th, td { padding: 12px 15px; text-align: left; }
+        tbody tr { border-bottom: 1px solid #e0e0e0; }
+        tbody tr:hover { background-color: #f8f9fa; }
+        .badge-simple { background: #17a2b8; color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; }
+        .badge-premium { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; }
+        .badge-vip { background: linear-gradient(135deg, #f6d365 0%, #fda085 100%); color: #333; padding: 4px 12px; border-radius: 20px; font-size: 12px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: white; border-radius: 15px; padding: 20px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .stat-card h3 { font-size: 2.5em; margin-bottom: 5px; }
+        .stat-card p { color: #666; font-size: 0.9em; }
+        .stat-card.primary { background: linear-gradient(135deg, #43cea2 0%, #185a9d 100%); color: white; }
         .stat-card.primary p { color: rgba(255,255,255,0.9); }
-
-        .full-width {
-            grid-column: 1 / -1;
-        }
-
-        .alert-info {
-            background-color: #d1ecf1;
-            color: #0c5460;
-            padding: 15px;
-            border-radius: 8px;
-        }
-
-        .info-text {
-            text-align: center;
-            padding: 20px;
-            color: #666;
-            font-style: italic;
-        }
-
-        .actions {
-            display: flex;
-            gap: 5px;
-            flex-wrap: wrap;
-        }
-
+        .full-width { grid-column: 1 / -1; }
+        .alert-info { background-color: #d1ecf1; color: #0c5460; padding: 15px; border-radius: 8px; }
+        .alert-success { background-color: #d4edda; color: #155724; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
+        .alert-error { background-color: #f8d7da; color: #721c24; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
+        .info-text { text-align: center; padding: 20px; color: #666; font-style: italic; }
+        .actions { display: flex; gap: 5px; flex-wrap: wrap; }
+        .debug-info { background: #f0f0f0; border-left: 4px solid #43cea2; padding: 10px; margin-bottom: 15px; font-size: 12px; color: #666; }
         @media (max-width: 768px) {
             .grid { grid-template-columns: 1fr; }
-            .main-header h1 { font-size: 1.8em; }
-            .stats-grid { grid-template-columns: 1fr; }
             .btn-sm { width: 100%; margin: 2px 0; text-align: center; }
-        }
-
-        .card { animation: fadeIn 0.5s ease-out; }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
@@ -288,168 +118,178 @@
         <p>Gérez votre parc automobile et les tarifs associés</p>
     </div>
 
-    <!-- Statistiques (initialisées à zéro) -->
+    <!-- Messages -->
+    <c:if test="${not empty success}">
+        <c:choose>
+            <c:when test="${success == 'added'}"><div class="alert-success">✅ Voiture ajoutée avec succès !</div></c:when>
+            <c:when test="${success == 'updated'}"><div class="alert-success">✏️ Voiture modifiée avec succès !</div></c:when>
+            <c:when test="${success == 'deleted'}"><div class="alert-success">🗑️ Voiture supprimée avec succès !</div></c:when>
+        </c:choose>
+    </c:if>
+    <c:if test="${not empty error}"><div class="alert-error">❌ ${error}</div></c:if>
+
+    <!-- Info debug -->
+    <div class="debug-info">
+        📊 <strong>Info technique :</strong> ${voitures.size()} voiture(s) chargée(s) depuis la base de données
+    </div>
+
+    <!-- Statistiques -->
     <div class="stats-grid">
-        <div class="stat-card primary">
-            <h3>0</h3>
-            <p>🚗 Total Voitures</p>
-        </div>
+        <div class="stat-card primary"><h3>${voitures.size()}</h3><p>🚗 Total Voitures</p></div>
         <div class="stat-card">
-            <h3>0</h3>
+            <h3>
+                <c:set var="totalPlaces" value="0"/>
+                <c:forEach var="v" items="${voitures}"><c:set var="totalPlaces" value="${totalPlaces + v.nbrplace}"/></c:forEach>
+                ${totalPlaces}
+            </h3>
             <p>💺 Total Places</p>
         </div>
         <div class="stat-card">
-            <h3>0 Ar</h3>
+            <h3>
+                <c:set var="totalValeur" value="0"/>
+                <c:forEach var="v" items="${voitures}"><c:set var="totalValeur" value="${totalValeur + (v.frais * v.nbrplace)}"/></c:forEach>
+                ${totalValeur} Ar
+            </h3>
             <p>💰 Valeur du parc</p>
-        </div>
-        <div class="stat-card">
-            <h3>0</h3>
-            <p>🏷️ Types différents</p>
         </div>
     </div>
 
     <div class="grid">
-        <!-- SECTION 1: AJOUTER UNE VOITURE -->
+        <!-- AJOUTER -->
         <div class="card">
-            <div class="card-header">
-                <span class="icon">➕</span>
-                <h2>Ajouter une Voiture</h2>
-            </div>
-            <form action="#" method="post" onsubmit="alert('Fonctionnalité à connecter au backend'); return false;">
-                <div class="form-group">
-                    <label>🆔 ID Voiture *</label>
-                    <input type="text" name="idvoit" id="idvoit" placeholder="Ex: V001, BUS001" required pattern="[A-Za-z0-9]{3,10}">
-                    <small>Format: 3 à 10 caractères alphanumériques</small>
-                </div>
-                <div class="form-group">
-                    <label>📝 Design / Modèle *</label>
-                    <input type="text" name="design" id="design" placeholder="Ex: Mercedes Sprinter, Toyota Hiace" required>
-                </div>
+            <div class="card-header"><span class="icon">➕</span><h2>Ajouter une Voiture</h2></div>
+            <form action="${pageContext.request.contextPath}/VoitureServlet" method="post">
+                <input type="hidden" name="action" value="insert">
+                <div class="form-group"><label>🆔 ID Voiture *</label><input type="text" name="idvoit" required></div>
+                <div class="form-group"><label>📝 Design *</label><input type="text" name="design" required></div>
                 <div class="form-group">
                     <label>🏷️ Type *</label>
-                    <select name="type" id="type" required>
-                        <option value="">Sélectionner un type</option>
-                        <option value="simple">🚌 Simple - Standard</option>
-                        <option value="premium">✨ Premium - Confort</option>
-                        <option value="VIP">👑 VIP - Luxe</option>
+                    <select name="type" required>
+                        <option value="">Sélectionner</option>
+                        <option value="simple">🚌 Simple</option>
+                        <option value="premium">✨ Premium</option>
+                        <option value="VIP">👑 VIP</option>
                     </select>
                 </div>
-                <div class="form-group">
-                    <label>💺 Nombre de places *</label>
-                    <input type="number" name="nbrplace" id="nbrplace" placeholder="Ex: 15, 30, 50" required min="1" max="100">
-                </div>
-                <div class="form-group">
-                    <label>💰 Frais (Ar) *</label>
-                    <input type="number" name="frais" id="frais" placeholder="Ex: 25000" required min="0" step="1000">
-                </div>
+                <div class="form-group"><label>💺 Nombre de places *</label><input type="number" name="nbrplace" required min="1"></div>
+                <div class="form-group"><label>💰 Frais (Ar) *</label><input type="number" name="frais" required min="0"></div>
                 <button type="submit" class="btn btn-primary">💾 Enregistrer</button>
                 <button type="reset" class="btn btn-secondary">🗑️ Réinitialiser</button>
             </form>
         </div>
 
-        <!-- SECTION 2: MODIFIER UNE VOITURE -->
+        <!-- MODIFIER -->
         <div class="card">
-            <div class="card-header">
-                <span class="icon">✏️</span>
-                <h2>Modifier une Voiture</h2>
-            </div>
-            <div class="alert-info">
-                ℹ️ Sélectionnez une voiture dans la liste pour la modifier
-            </div>
+            <div class="card-header"><span class="icon">✏️</span><h2>Modifier une Voiture</h2></div>
+            <c:if test="${not empty voitureToEdit}">
+                <form action="${pageContext.request.contextPath}/VoitureServlet" method="post">
+                    <input type="hidden" name="action" value="update">
+                    <input type="hidden" name="idvoit" value="${voitureToEdit.idvoit}">
+                    <div class="form-group"><label>📝 Design *</label><input type="text" name="design" value="${voitureToEdit.design}" required></div>
+                    <div class="form-group">
+                        <label>🏷️ Type *</label>
+                        <select name="type" required>
+                            <option value="simple" ${voitureToEdit.type == 'simple' ? 'selected' : ''}>🚌 Simple</option>
+                            <option value="premium" ${voitureToEdit.type == 'premium' ? 'selected' : ''}>✨ Premium</option>
+                            <option value="VIP" ${voitureToEdit.type == 'VIP' ? 'selected' : ''}>👑 VIP</option>
+                        </select>
+                    </div>
+                    <div class="form-group"><label>💺 Nombre de places *</label><input type="number" name="nbrplace" value="${voitureToEdit.nbrplace}" required min="1"></div>
+                    <div class="form-group"><label>💰 Frais (Ar) *</label><input type="number" name="frais" value="${voitureToEdit.frais}" required min="0"></div>
+                    <button type="submit" class="btn btn-primary">💾 Mettre à jour</button>
+                    <a href="${pageContext.request.contextPath}/VoitureServlet" class="btn btn-secondary">Annuler</a>
+                </form>
+            </c:if>
+            <c:if test="${empty voitureToEdit}"><div class="alert-info">ℹ️ Cliquez sur "Modifier" dans la liste pour modifier une voiture</div></c:if>
         </div>
     </div>
 
-    <!-- SECTION 3: LISTE DES VOITURES -->
+    <!-- LISTE -->
     <div class="card full-width">
-        <div class="card-header">
-            <span class="icon">📊</span>
-            <h2>Liste des Voitures</h2>
-        </div>
-
-        <div style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
-            <a href="#" class="btn btn-primary" onclick="alert('Formulaire d\'ajout ci-dessus'); return false;">➕ Ajouter une voiture</a>
-            <a href="../index.jsp" class="btn btn-secondary">🏠 Retour à l'accueil</a>
+        <div class="card-header"><span class="icon">📊</span><h2>Liste des Voitures</h2></div>
+        <div style="margin-bottom: 20px;">
+            <a href="${pageContext.request.contextPath}/VoitureServlet" class="btn btn-primary">🔄 Rafraîchir</a>
+            <a href="${pageContext.request.contextPath}/" class="btn btn-secondary">🏠 Retour à l'accueil</a>
         </div>
 
         <div class="table-responsive">
             <table>
                 <thead>
-                <tr>
-                    <th>🆔 ID</th>
-                    <th>📝 Design / Modèle</th>
-                    <th>🏷️ Type</th>
-                    <th>💺 Places</th>
-                    <th>💰 Frais (Ar)</th>
-                    <th>📊 Occupation</th>
-                    <th>⚙️ Actions</th>
-                </tr>
+                <tr><th>🆔 ID</th><th>📝 Design</th><th>🏷️ Type</th><th>💺 Places</th><th>💰 Frais (Ar)</th><th>⚙️ Actions</th></tr>
                 </thead>
                 <tbody>
-                <tr>
-                    <td colspan="7" class="info-text">
-                        📋 Aucune voiture enregistrée pour le moment
-                    </td>
-                </tr>
+                <c:choose>
+                    <c:when test="${not empty searchResults}">
+                        <c:forEach var="voiture" items="${searchResults}">
+                            <tr>
+                                <td>${voiture.idvoit}</td>
+                                <td><strong>${voiture.design}</strong></td>
+                                <td>
+                                    <c:choose>
+                                        <c:when test="${voiture.type == 'simple'}"><span class="badge-simple">🚌 Simple</span></c:when>
+                                        <c:when test="${voiture.type == 'premium'}"><span class="badge-premium">✨ Premium</span></c:when>
+                                        <c:when test="${voiture.type == 'VIP'}"><span class="badge-vip">👑 VIP</span></c:when>
+                                    </c:choose>
+                                </td>
+                                <td>${voiture.nbrplace}</td>
+                                <td>${voiture.frais} Ar</td>
+                                <td class="actions">
+                                    <a href="${pageContext.request.contextPath}/VoitureServlet?action=edit&id=${voiture.idvoit}" class="btn btn-warning btn-sm">✏️ Modifier</a>
+                                    <a href="${pageContext.request.contextPath}/VoitureServlet?action=delete&id=${voiture.idvoit}" class="btn btn-danger btn-sm" onclick="return confirm('Supprimer ?')">🗑️ Supprimer</a>
+                                </td>
+                            </tr>
+                        </c:forEach>
+                    </c:when>
+                    <c:when test="${not empty voitures}">
+                        <c:forEach var="voiture" items="${voitures}">
+                            <tr>
+                                <td>${voiture.idvoit}</td>
+                                <td><strong>${voiture.design}</strong></td>
+                                <td>
+                                    <c:choose>
+                                        <c:when test="${voiture.type == 'simple'}"><span class="badge-simple">🚌 Simple</span></c:when>
+                                        <c:when test="${voiture.type == 'premium'}"><span class="badge-premium">✨ Premium</span></c:when>
+                                        <c:when test="${voiture.type == 'VIP'}"><span class="badge-vip">👑 VIP</span></c:when>
+                                    </c:choose>
+                                </td>
+                                <td>${voiture.nbrplace}</td>
+                                <td>${voiture.frais} Ar</td>
+                                <td class="actions">
+                                    <a href="${pageContext.request.contextPath}/VoitureServlet?action=edit&id=${voiture.idvoit}" class="btn btn-warning btn-sm">✏️ Modifier</a>
+                                    <a href="${pageContext.request.contextPath}/VoitureServlet?action=delete&id=${voiture.idvoit}" class="btn btn-danger btn-sm" onclick="return confirm('Supprimer ?')">🗑️ Supprimer</a>
+                                </td>
+                            </tr>
+                        </c:forEach>
+                    </c:when>
+                    <c:otherwise>
+                        <tr><td colspan="6" class="info-text">📋 Aucune voiture enregistrée</td></tr>
+                    </c:otherwise>
+                </c:choose>
                 </tbody>
             </table>
         </div>
     </div>
 
-    <!-- SECTION 4: RÉCAPITULATIF PAR TYPE -->
+    <!-- SECTION RECHERCHE -->
     <div class="card full-width">
-        <div class="card-header">
-            <span class="icon">📈</span>
-            <h2>Récapitulatif par Type de Voiture</h2>
-        </div>
-        <div class="stats-grid">
-            <div class="stat-card">
-                <h3>0</h3>
-                <p>🚌 Voitures Simple</p>
-                <small>0 places</small>
+        <div class="card-header"><span class="icon">🔍</span><h2>Recherche de Voiture</h2></div>
+        <form action="${pageContext.request.contextPath}/VoitureServlet" method="get" style="margin-bottom: 20px;">
+            <input type="hidden" name="action" value="search">
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <input type="text" name="keyword" placeholder="Rechercher par design..." style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
+                <button type="submit" class="btn btn-primary">🔍 Rechercher</button>
+                <c:if test="${not empty param.keyword}">
+                    <a href="${pageContext.request.contextPath}/VoitureServlet" class="btn btn-secondary">🔄 Afficher tout</a>
+                </c:if>
             </div>
-            <div class="stat-card">
-                <h3>0</h3>
-                <p>✨ Voitures Premium</p>
-                <small>0 places</small>
-            </div>
-            <div class="stat-card">
-                <h3>0</h3>
-                <p>👑 Voitures VIP</p>
-                <small>0 places</small>
-            </div>
-        </div>
+        </form>
+        <c:if test="${not empty param.keyword and not empty searchResults}">
+            <div class="alert-info">🔎 ${searchResults.size()} résultat(s) trouvé(s) pour "${param.keyword}"</div>
+        </c:if>
+        <c:if test="${not empty param.keyword and empty searchResults}">
+            <div class="alert-info">🔎 Aucun résultat trouvé pour "${param.keyword}"</div>
+        </c:if>
     </div>
 </div>
-
-<script>
-    function validateForm() {
-        var idvoit = document.getElementById("idvoit");
-        var design = document.getElementById("design");
-        var nbrplace = document.getElementById("nbrplace");
-        var frais = document.getElementById("frais");
-
-        if (idvoit && idvoit.value.trim() === "") {
-            alert("Veuillez saisir l'ID de la voiture");
-            idvoit.focus();
-            return false;
-        }
-        if (design && design.value.trim() === "") {
-            alert("Veuillez saisir le design/modèle de la voiture");
-            design.focus();
-            return false;
-        }
-        if (nbrplace && (nbrplace.value < 1 || nbrplace.value > 100)) {
-            alert("Le nombre de places doit être compris entre 1 et 100");
-            nbrplace.focus();
-            return false;
-        }
-        if (frais && frais.value < 0) {
-            alert("Le frais doit être un nombre positif");
-            frais.focus();
-            return false;
-        }
-        return true;
-    }
-</script>
 </body>
 </html>

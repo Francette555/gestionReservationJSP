@@ -43,7 +43,9 @@ public class VoitureDAO {
 
     public List<Voiture> findAll() throws SQLException {
         List<Voiture> voitures = new ArrayList<>();
-        String sql = "SELECT * FROM VOITURE";
+        String sql = "SELECT * FROM VOITURE ORDER BY idvoit";
+
+        System.out.println("=== VoitureDAO.findAll() ===");
 
         try (Connection conn = DatabaseConnection.getConnection();
              Statement stmt = conn.createStatement();
@@ -57,7 +59,9 @@ public class VoitureDAO {
                 v.setNbrplace(rs.getInt("nbrplace"));
                 v.setFrais(rs.getInt("frais"));
                 voitures.add(v);
+                System.out.println("  Voiture trouvée: " + v.getIdvoit() + " - " + v.getDesign());
             }
+            System.out.println("Total voitures: " + voitures.size());
         }
         return voitures;
     }
@@ -82,6 +86,37 @@ public class VoitureDAO {
             }
         }
         return null;
+    }
+
+    public List<Voiture> searchByDesign(String keyword) throws SQLException {
+        List<Voiture> voitures = new ArrayList<>();
+        String sql = "SELECT * FROM VOITURE WHERE Design LIKE ? ORDER BY Design";
+
+        System.out.println("=== VoitureDAO.searchByDesign('" + keyword + "') ===");
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, "%" + keyword + "%");
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    Voiture v = new Voiture();
+                    v.setIdvoit(rs.getString("idvoit"));
+                    v.setDesign(rs.getString("Design"));
+                    v.setType(rs.getString("type"));
+                    v.setNbrplace(rs.getInt("nbrplace"));
+                    v.setFrais(rs.getInt("frais"));
+                    voitures.add(v);
+                    System.out.println("  Résultat recherche: " + v.getDesign());
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Erreur SQL dans searchByDesign(): " + e.getMessage());
+            e.printStackTrace();
+            throw e;
+        }
+        System.out.println("Total résultats: " + voitures.size());
+        return voitures;
     }
 
     public void update(Voiture voiture) throws SQLException {
