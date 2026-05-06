@@ -8,7 +8,7 @@ public class Reservation {
     private String idvoit;
     private int idclt;
     private int place;
-    private Timestamp dateReserv;
+    private Timestamp dateReserv;  //
     private Date dateVoyage;
     private String payement;
     private int montantAvance;
@@ -59,4 +59,13 @@ public class Reservation {
     // Ajoutez ces getter et setter
     public String getDesignVoitureType() { return designVoitureType; }
     public void setDesignVoitureType(String designVoitureType) { this.designVoitureType = designVoitureType; }
+
+    // Dans Reservation.java, ajoutez cet attribut
+    private String typeVoiture;
+
+    // Getters et Setters
+    public String getTypeVoiture() { return typeVoiture; }
+    public void setTypeVoiture(String typeVoiture) { this.typeVoiture = typeVoiture; }
+
 }
+

@@ -418,7 +418,7 @@
                 <span class="icon">📈</span>
                 <span>Statistiques</span>
             </a>
-        </div>-->
+        </div>
 
         <div class="nav-section">
             <div class="nav-title">Support</div>
@@ -426,7 +426,7 @@
                 <span class="icon">📧</span>
                 <span>Contact</span>
             </a>
-        </div>
+        </div>-->
     </div>
 
     <!-- Contenu principal -->

@@ -12,12 +12,24 @@ CREATE TABLE VOITURE (
 );
 
 -- Table PLACE
-CREATE TABLE PLACE (
+/*CREATE TABLE PLACE (
                        idvoit VARCHAR(10),
                        place INT,
                        occupation ENUM('oui', 'non') DEFAULT 'non',
                        PRIMARY KEY (idvoit, place),
                        FOREIGN KEY (idvoit) REFERENCES VOITURE(idvoit) ON DELETE CASCADE
+);*/
+
+-- Table PLACE simplifiée (juste la liste des places par voiture)
+CREATE TABLE PLACE (
+                       idplace INT AUTO_INCREMENT PRIMARY KEY,
+                       idvoit VARCHAR(20) NOT NULL,
+                       place_num INT NOT NULL,
+                       date_voyage DATE NOT NULL,
+                       occupation VARCHAR(3) DEFAULT 'non',
+                       idreserv VARCHAR(50),
+                       FOREIGN KEY (idvoit) REFERENCES VOITURE(idvoit),
+                       UNIQUE KEY unique_place_per_day (idvoit, place_num, date_voyage)
 );
 
 -- Table CLIENT
